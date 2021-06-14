@@ -25,6 +25,7 @@ __version__='1.7.2'
 import numpy as np # numerics for matrices
 import sys # for exiting
 import copy # for deepcopying
+import matplotlib.pyplot as plt
 
 class tb_model(object):
     r"""
@@ -2096,6 +2097,65 @@ matrix.""")
             else:
                 raise Exception("\n\nBasis must be either bloch or orbital!")
 
+    def bandplot(self,path,nkpts=101,ylim=[-1,1],label=[],title="Band structure",color='blue',report=True):
+    
+        kpts, kdist, knode = self.k_path(path,nkpts,report=report)
+        evals = self.solve_all(kpts)
+        fig, ax = plt.subplots()
+        ax.set_xticks(knode)
+        if len(label) > 0:
+            ax.set_xticklabels(label)
+        ax.set_ylim(ylim[0],ylim[1])
+        ax.set_title(title)
+        ax.set_xlabel("Path in k-space")
+        ax.set_ylabel("Band energy")
+        for i in range(len(evals)):
+            ax.plot(kdist,evals[i],color=color,linewidth = 0.2)
+        for i in range(len(knode)):
+            ax.vlines(knode[i],ylim[0],ylim[1],linewidth=0.2)
+        ax.axhline(0.0,c='m',linewidth=0.2)
+
+        return fig
+
+    def wilsonloop(self,nk1,nk2,bands,di):
+
+        # initialize figure with subplots
+        fig, ax = plt.subplots(figsize=(5, 10))
+        
+        #calculate my-array
+        my_array = wf_array(self,[nk1,nk2])
+        
+        # solve model on a regular grid, and put origin of
+        # Brillouin zone at [-1/2,-1/2]  point
+        my_array.solve_on_grid([-0.5,-0.5])
+        
+        wan_cent = my_array.berry_phase(bands,dir=di,contin=False,berry_evals=True)
+        wan_cent/=(2.0*np.pi)
+        
+        nky=wan_cent.shape[0]
+        nwann = wan_cent.shape[1]
+        ky=np.linspace(0.,1.,nky)
+        # draw shifted Wannier center positions
+        for shift in range(-2,3):
+            for i in range(nwann):
+                ax.plot(ky,wan_cent[:,i]+float(shift),"k.",markersize=1)
+        ax.set_ylim(-0.5,0.5)
+        ax.set_ylabel('Wannier center along x')
+        if di == 0:
+            ax.set_xlabel(r'$k_x$')
+            ax.set_ylabel('Wannier center along y')
+        elif di == 1:
+            ax.set_xlabel(r'$k_y$')
+            ax.set_ylabel('Wannier center along x')
+            
+        ax.set_xticks([0.0,0.5,1.0])
+        ax.set_xlim(0.0,1.0)
+        ax.set_xticklabels([r"$0$",r"$\pi$", r"$2\pi$"])
+        ax.axvline(x=.5,linewidth=0.5, color='k')
+        ax.set_title("1D Wannier centers")
+        
+        return fig
+
 
 # keeping old name for backwards compatibility
 # will be removed in future
@@ -3716,4 +3776,22 @@ def _offdiag_approximation_warning_and_stop():
 ----------------------------------------------------------------------
 
 """)
+
+def state_overlap(evecs,spin="both"):
+    if spin == "up":
+        spins = (0)
+    elif spin == "down":
+        spins = (1)
+    elif spin == "both":
+        spins = (0,1)
+    else:
+        raise Exception("Invalid spin specification.")
+    nbands, nk ,ncomp, nspin = evecs.shape
+    overlap = np.zeros((nbands,nk))
+    for s in spins:
+        for i in range(nbands):
+            for j in range(nk):
+                overlap[i,j] += np.real(np.conj(evecs[i,j,:,s]).dot(evecs[i,j,:,s]))
+    return overlap
+
     
