@@ -1,1 +1,5 @@
 .vscode/settings.json
+test.ipynb
+.ipynb_checkpoints/test-checkpoint.ipynb
+__pycache__/fast_routines.cpython-38.pyc
+__pycache__/yeet_pythtb.cpython-38.pyc
