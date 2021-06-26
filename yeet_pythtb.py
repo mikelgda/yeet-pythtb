@@ -185,6 +185,7 @@ class tb_model(object):
         self._hst = None
         self._hind = None
         self._hR = None
+        self._update = False
 
         # The onsite energies and hoppings are not specified
         # when creating a 'tb_model' object.  They are speficied
@@ -529,6 +530,7 @@ direction.  (Or, alternatively, see the documentation on the
                 self._hoppings.append(new_hop)
         else:
             raise Exception("\n\nWrong value of mode parameter")
+        self._update = True
 
     def _val_to_block(self,val):
         """If nspin=2 then returns a 2 by 2 matrix from the input
@@ -982,6 +984,9 @@ matrix.""")
           (eval, evec) = tb.solve_all([[0.0, 0.0], [0.0, 0.2]], eig_vectors=True)
 
         """
+        if self._update:
+            self._update_arrays()
+            self._update = False
         # if not 0-dim case
         if not (k_list is None):
             k_list = np.array(k_list,dtype="float64",order='C')
@@ -1016,20 +1021,24 @@ matrix.""")
         """
         # if not 0-dim case
         if not (k_point is None):
+            k_point = np.array(k_point,dtype="float64")
+            ret_eval,ret_evec = fr.solve_all(self._dim_k,self._per,self._orb,self._norb,self._nsta, \
+                self._site_energies,self._hst,self._hind,self._hR,k_list,eig_vectors=eig_vectors)
             if eig_vectors==False:
-                eval=self.solve_all([k_point],eig_vectors=eig_vectors)
-                # indices of eval are [band]
-                return eval[:,0]
+                return ret_eval[:,0]
             else:
-                (eval,evec)=self.solve_all([k_point],eig_vectors=eig_vectors)
-                # indices of eval are [band] for evec are [band,orbital,spin]
                 if self._nspin==1:
-                    return (eval[:,0],evec[:,0,:])
+                    return (ret_eval[:,0],ret_evec[:,0,:])
                 elif self._nspin==2:
-                    return (eval[:,0],evec[:,0,:,:])
+                    return (ret_eval[:,0],ret_evec[:,0,:,:])
         else:
             # do the same as solve_all
             return self.solve_all(eig_vectors=eig_vectors)
+
+    def _update_arrays(self):
+        self._hst = np.array([h[0] for h in self._hoppings]).astype("complex128")
+        self._hind = np.array([h[1:3] for h in self._hoppings])
+        self._hR = np.array([h[3] for h in self._hoppings])
 
     def cut_piece(self,num,fin_dir,glue_edgs=False):
         r"""
