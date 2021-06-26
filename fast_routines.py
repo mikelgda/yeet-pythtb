@@ -135,3 +135,31 @@ def sol_ham(ham,norb,nsta,eig_vectors=False):
             (eval,eig)=_nicefy_eig(eval,eig)
             # reshape eigenvectors if doing a spinfull calculation
             return (eval,eig)
+#spin implementation
+@njit('Tuple((float64[:,::1],complex128[:,:,:,::1]))(int64,int32[:],float64[:,:],int64,int64,complex128[:,:,:],complex128[:,:,:],int32[:,:],int32[:,:],float64[:,:],boolean)')
+def solve_all(dim_k,per,orb,norb,nsta,site_energies,hst,hind,hR,k_list,eig_vectors=False):
+    nkp=len(k_list) # number of k points
+    # first initialize matrices for all return data
+    #    indices are [band,kpoint]
+    ret_eval = np.zeros((nsta,nkp),dtype="float64")
+    #    indices are [band,kpoint,orbital,spin]
+    ret_evec = np.zeros((nsta,nkp,norb,2),dtype="complex128")
+    # go over all kpoints
+    for i,k in enumerate(k_list):
+        # generate Hamiltonian at that point
+        ham = gen_ham(dim_k,per,orb,norb,site_energies,hst,hind,hR,k)
+        # solve Hamiltonian
+        if eig_vectors == False:
+            eval, evec = sol_ham(ham,norb,nsta,eig_vectors=eig_vectors)
+            ret_eval[:,i] = eval[:]
+        else:
+            eval, evec = sol_ham(ham,norb,nsta,eig_vectors=eig_vectors)
+            ret_eval[:,i]=eval[:]
+            ret_evec[:,i,:,:]=evec[:,:,:]
+    # return stuff
+    if eig_vectors==False:
+        # indices of eval are [band,kpoint]
+        return ret_eval, np.zeros((1,1,1,1),dtype="complex128")
+    else:
+        # indices of eval are [band,kpoint] for evec are [band,kpoint,orbital,(spin)]
+        return (ret_eval,ret_evec)
