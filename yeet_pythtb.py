@@ -25,6 +25,7 @@ __version__='1.7.2'
 import numpy as np # numerics for matrices
 import sys # for exiting
 import copy # for deepcopying
+import fast_routines as fr
 
 class tb_model(object):
     r"""
@@ -179,6 +180,9 @@ class tb_model(object):
         
         # Initialize hoppings to empty list
         self._hoppings=[]
+        self._hst = None
+        self._hind = None
+        self._hR = None
 
         # The onsite energies and hoppings are not specified
         # when creating a 'tb_model' object.  They are speficied
@@ -880,58 +884,12 @@ matrix.""")
         "Returns lattice vectors in format [vector,coordinate]."
         return self._lat.copy()
 
-    def _gen_ham(self,k_input=None):
+    def _gen_ham(self,k_input):
         """Generate Hamiltonian for a certain k-point,
         K-point is given in reduced coordinates!"""
-        kpnt=np.array(k_input)
-        if not (k_input is None):
-            # if kpnt is just a number then convert it to an array
-            if len(kpnt.shape)==0:
-                kpnt=np.array([kpnt])
-            # check that k-vector is of corect size
-            if kpnt.shape!=(self._dim_k,):
-                raise Exception("\n\nk-vector of wrong shape!")
-        else:
-            if self._dim_k!=0:
-                raise Exception("\n\nHave to provide a k-vector!")
-        # zero the Hamiltonian matrix
-        if self._nspin==1:
-            ham=np.zeros((self._norb,self._norb),dtype=complex)
-        elif self._nspin==2:
-            ham=np.zeros((self._norb,2,self._norb,2),dtype=complex)
-        # modify diagonal elements
-        for i in range(self._norb):
-            if self._nspin==1:
-                ham[i,i]=self._site_energies[i]
-            elif self._nspin==2:
-                ham[i,:,i,:]=self._site_energies[i]
-        # go over all hoppings
-        for hopping in self._hoppings:
-            # get all data for the hopping parameter
-            if self._nspin==1:
-                amp=complex(hopping[0])
-            elif self._nspin==2:
-                amp=np.array(hopping[0],dtype=complex)
-            i=hopping[1]
-            j=hopping[2]
-            # in 0-dim case there is no phase factor
-            if self._dim_k>0:
-                ind_R=np.array(hopping[3],dtype=float)
-                # vector from one site to another
-                rv=-self._orb[i,:]+self._orb[j,:]+ind_R
-                # Take only components of vector which are periodic
-                rv=rv[self._per]
-                # Calculate the hopping, see details in info/tb/tb.pdf
-                phase=np.exp((2.0j)*np.pi*np.dot(kpnt,rv))
-                amp=amp*phase
-            # add this hopping into a matrix and also its conjugate
-            if self._nspin==1:
-                ham[i,j]+=amp
-                ham[j,i]+=amp.conjugate()
-            elif self._nspin==2:
-                ham[i,:,j,:]+=amp
-                ham[j,:,i,:]+=amp.T.conjugate()
-        return ham
+        return fr.gen_ham(self._dim_k,self._per,self._orb,self._norb, \
+            self._site_energies,self._hst,self._hind,self._hR,np.array(k_input,dtype="float64"))
+        
 
     def _sol_ham(self,ham,eig_vectors=False):
         """Solves Hamiltonian and returns eigenvectors, eigenvalues"""
