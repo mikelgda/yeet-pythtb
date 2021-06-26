@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+from numpy.core.arrayprint import dtype_short_repr
+
 # PythTB python tight binding module.
 # August 25th, 2017
 __version__='1.7.2'
@@ -982,30 +984,9 @@ matrix.""")
         """
         # if not 0-dim case
         if not (k_list is None):
-            nkp=len(k_list) # number of k points
-            # first initialize matrices for all return data
-            #    indices are [band,kpoint]
-            ret_eval=np.zeros((self._nsta,nkp),dtype=float)
-            #    indices are [band,kpoint,orbital,spin]
-            if self._nspin==1:
-                ret_evec=np.zeros((self._nsta,nkp,self._norb),dtype=complex)
-            elif self._nspin==2:
-                ret_evec=np.zeros((self._nsta,nkp,self._norb,2),dtype=complex)
-            # go over all kpoints
-            for i,k in enumerate(k_list):
-                # generate Hamiltonian at that point
-                ham=self._gen_ham(k)
-                # solve Hamiltonian
-                if eig_vectors==False:
-                    eval=self._sol_ham(ham,eig_vectors=eig_vectors)
-                    ret_eval[:,i]=eval[:]
-                else:
-                    (eval,evec)=self._sol_ham(ham,eig_vectors=eig_vectors)
-                    ret_eval[:,i]=eval[:]
-                    if self._nspin==1:
-                        ret_evec[:,i,:]=evec[:,:]
-                    elif self._nspin==2:
-                        ret_evec[:,i,:,:]=evec[:,:,:]
+            k_list = np.array(k_list,dtype="float64")
+            ret_eval,ret_evec = fr.solve_all(self._dim_k,self._per,self._orb,self._norb,self._nsta, \
+                self._site_energies,self._hst,self._hind,self._hR,k_list,eig_vectors=eig_vectors)
             # return stuff
             if eig_vectors==False:
                 # indices of eval are [band,kpoint]
