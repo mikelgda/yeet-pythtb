@@ -894,30 +894,11 @@ matrix.""")
     def _sol_ham(self,ham,eig_vectors=False):
         """Solves Hamiltonian and returns eigenvectors, eigenvalues"""
         # reshape matrix first
-        if self._nspin==1:
-            ham_use=ham
-        elif self._nspin==2:
-            ham_use=ham.reshape((2*self._norb,2*self._norb))
-        # check that matrix is hermitian
-        if np.max(ham_use-ham_use.T.conj())>1.0E-9:
-            raise Exception("\n\nHamiltonian matrix is not hermitian?!")
-        #solve matrix
-        if eig_vectors==False: # only find eigenvalues
-            eval=np.linalg.eigvalsh(ham_use)
-            # sort eigenvalues and convert to real numbers
-            eval=_nicefy_eig(eval)
-            return np.array(eval,dtype=float)
-        else: # find eigenvalues and eigenvectors
-            (eval,eig)=np.linalg.eigh(ham_use)
-            # transpose matrix eig since otherwise it is confusing
-            # now eig[i,:] is eigenvector for eval[i]-th eigenvalue
-            eig=eig.T
-            # sort evectors, eigenvalues and convert to real numbers
-            (eval,eig)=_nicefy_eig(eval,eig)
-            # reshape eigenvectors if doing a spinfull calculation
-            if self._nspin==2:
-                eig=eig.reshape((self._nsta,self._norb,2))
-            return (eval,eig)
+        evals,eigs = fr.sol_ham(ham,self._norb,self._nsta,eig_vectors=eig_vectors)
+        if eig_vectors:
+            return evals,eigs
+        else:
+            return eigs
 
     def solve_all(self,k_list=None,eig_vectors=False):
         r"""
