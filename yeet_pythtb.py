@@ -984,7 +984,7 @@ matrix.""")
         """
         # if not 0-dim case
         if not (k_list is None):
-            k_list = np.array(k_list,dtype="float64")
+            k_list = np.array(k_list,dtype="float64",order='C')
             ret_eval,ret_evec = fr.solve_all(self._dim_k,self._per,self._orb,self._norb,self._nsta, \
                 self._site_energies,self._hst,self._hind,self._hR,k_list,eig_vectors=eig_vectors)
             # return stuff
