@@ -27,7 +27,8 @@ __version__='1.7.2'
 import numpy as np # numerics for matrices
 import sys # for exiting
 import copy # for deepcopying
-import fast_routines as fr
+import fast_spin as fsp
+import fast_scalar as fsc
 
 class tb_model(object):
     r"""
@@ -891,14 +892,22 @@ matrix.""")
     def _gen_ham(self,k_input):
         """Generate Hamiltonian for a certain k-point,
         K-point is given in reduced coordinates!"""
-        return fr.gen_ham(self._dim_k,self._per,self._orb,self._norb, \
-            self._site_energies,self._hst,self._hind,self._hR,np.array(k_input,dtype="float64"))
-        
+        if self._nspin == 1:
+            return fsc.gen_ham(self._dim_k,self._per,self._orb,self._norb, \
+                self._site_energies,self._hst,self._hind,self._hR,np.array(k_input,dtype="float64"))
+        elif self._nspin == 2:
+            return fsp.gen_ham(self._dim_k,self._per,self._orb,self._norb, \
+                self._site_energies,self._hst,self._hind,self._hR,np.array(k_input,dtype="float64"))
 
     def _sol_ham(self,ham,eig_vectors=False):
         """Solves Hamiltonian and returns eigenvectors, eigenvalues"""
-        # reshape matrix first
-        evals,eigs = fr.sol_ham(ham,self._norb,self._nsta,eig_vectors=eig_vectors)
+        # check that matrix is hermitian
+        if np.max(ham-ham.T.conj())>1.0E-9:
+            raise Exception("\n\nHamiltonian matrix is not hermitian?!")
+        if self._nspin == 1:
+            evals,eigs = fsc.sol_ham(ham,eig_vectors=eig_vectors)
+        elif self._nspin == 2:
+            evals, eigs = fsp.sol_ham(ham,self._norb,self._nsta,eig_vectors=eig_vectors)
         if eig_vectors:
             return evals,eigs
         else:
@@ -990,8 +999,12 @@ matrix.""")
         # if not 0-dim case
         if not (k_list is None):
             k_list = np.array(k_list,dtype="float64",order='C')
-            ret_eval,ret_evec = fr.solve_all(self._dim_k,self._per,self._orb,self._norb,self._nsta, \
-                self._site_energies,self._hst,self._hind,self._hR,k_list,eig_vectors=eig_vectors)
+            if self._nspin == 1:
+                ret_eval,ret_evec = fsc.solve_all(self._dim_k,self._per,self._orb,self._norb,self._nsta, \
+                    self._site_energies,self._hst,self._hind,self._hR,k_list,eig_vectors=eig_vectors)
+            elif self._nspin == 2:
+                ret_eval,ret_evec = fsp.solve_all(self._dim_k,self._per,self._orb,self._norb,self._nsta, \
+                    self._site_energies,self._hst,self._hind,self._hR,k_list,eig_vectors=eig_vectors)
             # return stuff
             if eig_vectors==False:
                 # indices of eval are [band,kpoint]
@@ -1021,12 +1034,11 @@ matrix.""")
         """
         # if not 0-dim case
         if not (k_point is None):
-            k_point = np.array(k_point,dtype="float64")
-            ret_eval,ret_evec = fr.solve_all(self._dim_k,self._per,self._orb,self._norb,self._nsta, \
-                self._site_energies,self._hst,self._hind,self._hR,k_list,eig_vectors=eig_vectors)
             if eig_vectors==False:
+                ret_eval = self.solve_all([k_point],eig_vectors=eig_vectors)
                 return ret_eval[:,0]
             else:
+                ret_eval, ret_evec = self.solve_all([k_point],eig_vectors=eig_vectors)
                 if self._nspin==1:
                     return (ret_eval[:,0],ret_evec[:,0,:])
                 elif self._nspin==2:
