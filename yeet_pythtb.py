@@ -2200,20 +2200,42 @@ class wf_array(object):
         hst = self._model._hst
         hind = self._model._hind
         hR = self._model._hR
+        dim_arr = self._dim_arr
+        start_k = np.array(start_k)
         if norb <= 1:
             all_gaps = np.array([],dtype="float64")# trivial case since there is only one band
         else:
             gap_dim=np.copy(self._mesh_arr)-1
             gap_dim=np.append(gap_dim,norb*nspin-1)
-            all_gaps=np.zeros(gap_dim,dtype="float64")
+            all_gaps = np.zeros(gap_dim,dtype="float64")
         if nspin == 1:
-            wfs, all_gaps = fwf.solve_on_grid_scalar(dim_k,per,orb,norb,nsta,site_energies,\
-            hst,hind,hR,self._mesh_arr,self._dim_arr,self._wfs,all_gaps,start_k)
+            if dim_arr == 1:
+                fwf.solve_on_grid_scalar1D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+            elif dim_arr == 2:
+                fwf.solve_on_grid_scalar2D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+            elif dim_arr == 3:
+                fwf.solve_on_grid_scalar3D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+            elif dim_arr == 4:
+                fwf.solve_on_grid_scalar4D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
         elif nspin == 2:
-            wfs, all_gaps = fwf.solve_on_grid_spin(dim_k,per,orb,norb,nsta,site_energies,\
-            hst,hind,hR,self._mesh_arr,self._dim_arr,self._wfs,all_gaps,start_k)
-        self._wfs = wfs
-        for dir in range(self._dim_arr):
+            if dim_arr == 1:
+                fwf.solve_on_grid_spin1D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+            elif dim_arr == 2:
+                fwf.solve_on_grid_spin2D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+            elif dim_arr == 3:
+                fwf.solve_on_grid_spin3D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+            elif dim_arr == 4:
+                fwf.solve_on_grid_spin3D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+        # self._wfs = wfs
+        for dir in range(dim_arr):
             self.impose_pbc(dir,self._model._per[dir])
         return all_gaps.min(axis=tuple(range(self._dim_arr))) 
 
