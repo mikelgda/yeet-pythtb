@@ -1,4 +1,5 @@
 from numba import njit
+from numba.np.ufunc import parallel
 from numba.types import float64,int64,int32,complex128
 import numpy as np
 
@@ -24,7 +25,8 @@ def _nicefy_eig(eval,eig):
 
 
 #spin implementation
-@njit('complex128[:,:,:,::1](int64,int32[::1],float64[:,::1],int64,complex128[:,:,::1],complex128[:,:,::1],int32[:,::1],int32[:,::1],float64[::1])')
+# @njit('complex128[:,:,:,::1](int64,int32[::1],float64[:,::1],int64,complex128[:,:,::1],complex128[:,:,::1],int32[:,::1],int32[:,::1],float64[::1])')
+@njit
 def gen_ham(dim_k,per,orb,norb,site_energies,hst,hind,hR,k_input):
         """Generate Hamiltonian for a certain k-point,
         K-point is given in reduced coordinates!"""
@@ -56,7 +58,8 @@ def gen_ham(dim_k,per,orb,norb,site_energies,hst,hind,hR,k_input):
             ham[j,:,i,:] += amp.T.conjugate()
         return ham
 #spin implementation
-@njit('Tuple((float64[::1],complex128[:,:,::1]))(complex128[:,:,:,::1],int64,int64,boolean)')
+# @njit('Tuple((float64[::1],complex128[:,:,::1]))(complex128[:,:,:,::1],int64,int64,boolean)')
+@njit
 def sol_ham(ham,norb,nsta,eig_vectors=False):
         """Solves Hamiltonian and returns eigenvectors, eigenvalues"""
         # reshape matrix first
@@ -81,7 +84,8 @@ def sol_ham(ham,norb,nsta,eig_vectors=False):
             eig=eig.reshape((nsta,norb,2))
             return (eval,eig)
 #spin implementation
-@njit('Tuple((float64[:,::1],complex128[:,:,:,::1]))(int64,int32[::1],float64[:,::1],int64,int64,complex128[:,:,::1],complex128[:,:,::1],int32[:,::1],int32[:,::1],float64[:,::1],boolean)',parallel=True)
+# @njit('Tuple((float64[:,::1],complex128[:,:,:,::1]))(int64,int32[::1],float64[:,::1],int64,int64,complex128[:,:,::1],complex128[:,:,::1],int32[:,::1],int32[:,::1],float64[:,::1],boolean)',parallel=True)
+@njit(parallel=True)
 def solve_all(dim_k,per,orb,norb,nsta,site_energies,hst,hind,hR,k_list,eig_vectors=False):
     nkp=len(k_list) # number of k points
     # first initialize matrices for all return data
