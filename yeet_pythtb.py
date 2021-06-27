@@ -29,6 +29,7 @@ import sys # for exiting
 import copy # for deepcopying
 import fast_spin as fsp
 import fast_scalar as fsc
+import fast_wfarray as fwf
 
 class tb_model(object):
     r"""
@@ -2184,73 +2185,37 @@ class wf_array(object):
         """
         # check dimensionality
         if self._dim_arr!=self._model._dim_k:
-            raise Exception("\n\nIf using solve_on_grid method, dimension of wf_array must equal dim_k of the tight-binding model!")
-        # # to return gaps at all k-points
-        # if self._norb<=1:
-        #     all_gaps=None # trivial case since there is only one band
-        # else:
-        #     gap_dim=np.copy(self._mesh_arr)-1
-        #     gap_dim=np.append(gap_dim,self._norb*self._nspin-1)
-        #     all_gaps=np.zeros(gap_dim,dtype=float)
-        # #
-        # if self._dim_arr==1:
-        #     # don't need to go over the last point because that will be
-        #     # computed in the impose_pbc call
-        #     for i in range(self._mesh_arr[0]-1):
-        #         # generate a kpoint
-        #         kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1)]
-        #         # solve at that point
-        #         (eval,evec)=self._model.solve_one(kpt,eig_vectors=True)
-        #         # store wavefunctions
-        #         self[i]=evec
-        #         # store gaps
-        #         if all_gaps is not None:
-        #             all_gaps[i,:]=eval[1:]-eval[:-1]
-        #     # impose boundary conditions
-        #     self.impose_pbc(0,self._model._per[0])
-        # elif self._dim_arr==2:
-        #     for i in range(self._mesh_arr[0]-1):
-        #         for j in range(self._mesh_arr[1]-1):
-        #             kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1),\
-        #                  start_k[1]+float(j)/float(self._mesh_arr[1]-1)]
-        #             (eval,evec)=self._model.solve_one(kpt,eig_vectors=True)
-        #             self[i,j]=evec
-        #             if all_gaps is not None:
-        #                 all_gaps[i,j,:]=eval[1:]-eval[:-1]
-        #     for dir in range(2):
-        #         self.impose_pbc(dir,self._model._per[dir])
-        # elif self._dim_arr==3:
-        #     for i in range(self._mesh_arr[0]-1):
-        #         for j in range(self._mesh_arr[1]-1):
-        #             for k in range(self._mesh_arr[2]-1):
-        #                 kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1),\
-        #                      start_k[1]+float(j)/float(self._mesh_arr[1]-1),\
-        #                      start_k[2]+float(k)/float(self._mesh_arr[2]-1)]
-        #                 (eval,evec)=self._model.solve_one(kpt,eig_vectors=True)
-        #                 self[i,j,k]=evec
-        #                 if all_gaps is not None:
-        #                     all_gaps[i,j,k,:]=eval[1:]-eval[:-1]
-        #     for dir in range(3):
-        #         self.impose_pbc(dir,self._model._per[dir])
-        # elif self._dim_arr==4:
-        #     for i in range(self._mesh_arr[0]-1):
-        #         for j in range(self._mesh_arr[1]-1):
-        #             for k in range(self._mesh_arr[2]-1):
-        #                 for l in range(self._mesh_arr[3]-1):
-        #                     kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1),\
-        #                              start_k[1]+float(j)/float(self._mesh_arr[1]-1),\
-        #                              start_k[2]+float(k)/float(self._mesh_arr[2]-1),\
-        #                              start_k[3]+float(l)/float(self._mesh_arr[3]-1)]
-        #                     (eval,evec)=self._model.solve_one(kpt,eig_vectors=True)
-        #                     self[i,j,k,l]=evec
-        #                     if all_gaps is not None:
-        #                         all_gaps[i,j,k,l,:]=eval[1:]-eval[:-1]
-        #     for dir in range(4):
-        #         self.impose_pbc(dir,self._model._per[dir])
-        # else:
-        #     raise Exception("\n\nWrong dimensionality!")
-
-        # return all_gaps.min(axis=tuple(range(self._dim_arr)))
+            raise Exception("\n\nIf using solve_on_grid method,\
+                 dimension of wf_array must equal dim_k of the tight-binding model!")
+        elif self._dim_arr not in [1,2,3,4]:
+            raise Exception("\n\nWrong dimensionality!")
+        self._model._update_arrays()
+        dim_k = self._model._dim_k
+        per = self._model._per
+        orb = self._model._orb
+        norb = self._model._norb
+        nsta = self._model._nsta
+        nspin = self._nspin
+        site_energies = self._model._site_energies
+        hst = self._model._hst
+        hind = self._model._hind
+        hR = self._model._hR
+        if norb <= 1:
+            all_gaps = np.array([],dtype="float64")# trivial case since there is only one band
+        else:
+            gap_dim=np.copy(self._mesh_arr)-1
+            gap_dim=np.append(gap_dim,norb*nspin-1)
+            all_gaps=np.zeros(gap_dim,dtype="float64")
+        if nspin == 1:
+            wfs, all_gaps = fwf.solve_on_grid_scalar(dim_k,per,orb,norb,nsta,site_energies,\
+            hst,hind,hR,self._mesh_arr,self._dim_arr,self._wfs,all_gaps,start_k)
+        elif nspin == 2:
+            wfs, all_gaps = fwf.solve_on_grid_spin(dim_k,per,orb,norb,nsta,site_energies,\
+            hst,hind,hR,self._mesh_arr,self._dim_arr,self._wfs,all_gaps,start_k)
+        self._wfs = wfs
+        for dir in range(self._dim_arr):
+            self.impose_pbc(dir,self._model._per[dir])
+        return all_gaps.min(axis=tuple(range(self._dim_arr))) 
 
     def __check_key(self,key):
         # do some checks for 1D

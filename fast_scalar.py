@@ -3,6 +3,7 @@ from numba.np.ufunc import parallel
 from numba.types import float64,int64,int32,complex128
 import numpy as np
 
+
 @njit
 def _nicefy_eval(eval):
     "Sort eigenvaules and eigenvectors, if given, and convert to real numbers"
