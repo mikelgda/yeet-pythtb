@@ -153,12 +153,12 @@ class tb_model(object):
         # to be considered periodic.        
         if per==None:
             # by default first _dim_k dimensions are periodic
-            self._per=list(range(self._dim_k))
+            self._per=np.array(list(range(self._dim_k)))
         else:
             if len(per)!=self._dim_k:
                 raise Exception("\n\nWrong choice of periodic/infinite direction!")
             # store which directions are the periodic ones
-            self._per=per
+            self._per=np.array(per)
 
         # remember number of spin components
         if nspin not in [1,2]:
