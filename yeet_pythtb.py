@@ -1001,7 +1001,7 @@ matrix.""")
             self._update = False
         # if not 0-dim case
         if not (k_list is None):
-            per = self._per
+            per = np.array(self._per)
             k_list = np.array(k_list,dtype="float64",order='C')
             if k_list.ndim == 1:
                 k_list = k_list.reshape(k_list.size,1)
