@@ -893,6 +893,8 @@ matrix.""")
     def _gen_ham(self,k_input):
         """Generate Hamiltonian for a certain k-point,
         K-point is given in reduced coordinates!"""
+        if self._update:
+            self._update_arrays()
         if self._nspin == 1:
             return fsc.gen_ham(self._dim_k,self._per,self._orb,self._norb, \
                 self._site_energies,self._hst,self._hind,self._hR,np.array(k_input,dtype="float64"))
@@ -902,13 +904,8 @@ matrix.""")
 
     def _sol_ham(self,ham,eig_vectors=False):
         """Solves Hamiltonian and returns eigenvectors, eigenvalues"""
-        if self._nspin==1:
-            ham_use=ham
-        elif self._nspin==2:
-            ham_use=ham.reshape((2*self._norb,2*self._norb))
+
         # check that matrix is hermitian
-        if np.max(ham_use-ham_use.T.conj())>1.0E-9:
-            raise Exception("\n\nHamiltonian matrix is not hermitian?!")
         if self._nspin == 1:
             evals,eigs = fsc.sol_ham(ham,eig_vectors=eig_vectors)
         elif self._nspin == 2:
@@ -916,7 +913,7 @@ matrix.""")
         if eig_vectors:
             return evals,eigs
         else:
-            return eigs
+            return evals
 
     def solve_all(self,k_list=None,eig_vectors=False):
         r"""

@@ -72,7 +72,7 @@ def sol_ham(ham,norb,nsta,eig_vectors=False):
             eval=np.linalg.eigvalsh(ham_use)
             # sort eigenvalues and convert to real numbers
             eval=_nicefy_eval(eval)
-            return (eval,np.zeros((1,1,1),dtype="complex128"))
+            return eval,np.zeros((1,1,1),dtype="complex128")
         else: # find eigenvalues and eigenvectors
             (eval,eig)=np.linalg.eigh(ham_use)
             # transpose matrix eig since otherwise it is confusing
@@ -82,7 +82,7 @@ def sol_ham(ham,norb,nsta,eig_vectors=False):
             (eval,eig)=_nicefy_eig(eval,eig)
             # reshape eigenvectors if doing a spinfull calculation
             eig=eig.reshape((nsta,norb,2))
-            return (eval,eig)
+            return eval,eig
 #spin implementation
 # @njit('Tuple((float64[:,::1],complex128[:,:,:,::1]))(int64,int32[::1],float64[:,::1],int64,int64,complex128[:,:,::1],complex128[:,:,::1],int32[:,::1],int32[:,::1],float64[:,::1],boolean)',parallel=True)
 @njit(parallel=True)
