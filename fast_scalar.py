@@ -1,6 +1,8 @@
 from numba import njit
+from numba.np.ufunc import parallel
 from numba.types import float64,int64,int32,complex128
 import numpy as np
+
 
 @njit
 def _nicefy_eval(eval):
@@ -23,7 +25,8 @@ def _nicefy_eig(eval,eig):
     return (eval,eig)
 
 #scalar implementation
-@njit('complex128[:,::1](int64,int32[::1],float64[:,::1],int64,float64[::1],complex128[::1],int32[:,::1],int32[:,::1],float64[::1])')
+# @njit('complex128[:,::1](int64,int32[::1],float64[:,::1],int64,float64[::1],complex128[::1],int32[:,::1],int32[:,::1],float64[::1])')
+@njit
 def gen_ham(dim_k,per,orb,norb,site_energies,hst,hind,hR,k_input):
         """Generate Hamiltonian for a certain k-point,
         K-point is given in reduced coordinates!"""
@@ -55,7 +58,8 @@ def gen_ham(dim_k,per,orb,norb,site_energies,hst,hind,hR,k_input):
             ham[j,i] += np.conjugate(amp)
         return ham
 #scalar implementation
-@njit('Tuple((float64[::1],complex128[:,::1]))(complex128[:,::1],int64,int64,boolean)')
+# @njit('Tuple((float64[::1],complex128[:,::1]))(complex128[:,::1],boolean)')
+@njit
 def sol_ham(ham,eig_vectors=False):
         """Solves Hamiltonian and returns eigenvectors, eigenvalues"""
         # reshape matrix first
@@ -79,7 +83,8 @@ def sol_ham(ham,eig_vectors=False):
             # reshape eigenvectors if doing a spinfull calculation
             return (eval,eig)
 #scalar implementation
-@njit('Tuple((float64[:,::1],complex128[:,::1]))(int64,int32[::1],float64[:,::1],int64,int64,float64[::1],complex128[::1],int32[:,::1],int32[:,::1],float64[:,::1],boolean)',parallel=True)
+# @njit('Tuple((float64[:,::1],complex128[:,:,::1]))(int64,int32[::1],float64[:,::1],int64,int64,float64[::1],complex128[::1],int32[:,::1],int32[:,::1],float64[:,::1],boolean)',parallel=True)
+@njit(parallel=True)
 def solve_all(dim_k,per,orb,norb,nsta,site_energies,hst,hind,hR,k_list,eig_vectors=False):
     nkp=len(k_list) # number of k points
     # first initialize matrices for all return data
@@ -92,17 +97,17 @@ def solve_all(dim_k,per,orb,norb,nsta,site_energies,hst,hind,hR,k_list,eig_vecto
         # generate Hamiltonian at that point
         ham = gen_ham(dim_k,per,orb,norb,site_energies,hst,hind,hR,k_list[i])
         # solve Hamiltonian
-        if eig_vectors == False:
-            eval, evec = sol_ham(ham,norb,nsta,eig_vectors=eig_vectors)
+        if not eig_vectors:
+            eval, evec = sol_ham(ham,eig_vectors=eig_vectors)
             ret_eval[:,i] = eval[:]
         else:
-            eval, evec = sol_ham(ham,norb,nsta,eig_vectors=eig_vectors)
+            eval, evec = sol_ham(ham,eig_vectors=eig_vectors)
             ret_eval[:,i]=eval[:]
             ret_evec[:,i,:]=evec[:,:]
     # return stuff
     if eig_vectors==False:
         # indices of eval are [band,kpoint]
-        return ret_eval, np.zeros((1,1),dtype="complex128")
+        return ret_eval, np.zeros((1,1,1),dtype="complex128")
     else:
         # indices of eval are [band,kpoint] for evec are [band,kpoint,orbital,(spin)]
         return (ret_eval,ret_evec)

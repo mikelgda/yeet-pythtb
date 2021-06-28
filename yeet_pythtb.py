@@ -29,6 +29,7 @@ import sys # for exiting
 import copy # for deepcopying
 import fast_spin as fsp
 import fast_scalar as fsc
+import fast_wfarray as fwf
 
 class tb_model(object):
     r"""
@@ -153,12 +154,12 @@ class tb_model(object):
         # to be considered periodic.        
         if per==None:
             # by default first _dim_k dimensions are periodic
-            self._per=list(range(self._dim_k))
+            self._per=np.array(list(range(self._dim_k)))
         else:
             if len(per)!=self._dim_k:
                 raise Exception("\n\nWrong choice of periodic/infinite direction!")
             # store which directions are the periodic ones
-            self._per=per
+            self._per=np.array(per)
 
         # remember number of spin components
         if nspin not in [1,2]:
@@ -901,8 +902,12 @@ matrix.""")
 
     def _sol_ham(self,ham,eig_vectors=False):
         """Solves Hamiltonian and returns eigenvectors, eigenvalues"""
+        if self._nspin==1:
+            ham_use=ham
+        elif self._nspin==2:
+            ham_use=ham.reshape((2*self._norb,2*self._norb))
         # check that matrix is hermitian
-        if np.max(ham-ham.T.conj())>1.0E-9:
+        if np.max(ham_use-ham_use.T.conj())>1.0E-9:
             raise Exception("\n\nHamiltonian matrix is not hermitian?!")
         if self._nspin == 1:
             evals,eigs = fsc.sol_ham(ham,eig_vectors=eig_vectors)
@@ -999,6 +1004,8 @@ matrix.""")
         # if not 0-dim case
         if not (k_list is None):
             k_list = np.array(k_list,dtype="float64",order='C')
+            if k_list.ndim == 1:
+                k_list = k_list.reshape(k_list.size,1)
             if self._nspin == 1:
                 ret_eval,ret_evec = fsc.solve_all(self._dim_k,self._per,self._orb,self._norb,self._nsta, \
                     self._site_energies,self._hst,self._hind,self._hR,k_list,eig_vectors=eig_vectors)
@@ -1121,7 +1128,7 @@ matrix.""")
         fin_orb=np.array(fin_orb)
 
         # generate periodic directions of a finite model
-        fin_per=copy.deepcopy(self._per)
+        fin_per=copy.deepcopy(self._per).tolist()
         # find if list of periodic directions contains the one you
         # want to make finite
         if fin_per.count(fin_dir)!=1:
@@ -2182,73 +2189,59 @@ class wf_array(object):
         """
         # check dimensionality
         if self._dim_arr!=self._model._dim_k:
-            raise Exception("\n\nIf using solve_on_grid method, dimension of wf_array must equal dim_k of the tight-binding model!")
-        # to return gaps at all k-points
-        if self._norb<=1:
-            all_gaps=None # trivial case since there is only one band
+            raise Exception("\n\nIf using solve_on_grid method,\
+                 dimension of wf_array must equal dim_k of the tight-binding model!")
+        elif self._dim_arr not in [1,2,3,4]:
+            raise Exception("\n\nWrong dimensionality!")
+        self._model._update_arrays()
+        dim_k = self._model._dim_k
+        per = self._model._per
+        orb = self._model._orb
+        norb = self._model._norb
+        nsta = self._model._nsta
+        nspin = self._nspin
+        site_energies = self._model._site_energies
+        hst = self._model._hst
+        hind = self._model._hind
+        hR = self._model._hR
+        dim_arr = self._dim_arr
+        start_k = np.array(start_k)
+        if norb <= 1:
+            all_gaps = np.array([],dtype="float64")# trivial case since there is only one band
         else:
             gap_dim=np.copy(self._mesh_arr)-1
-            gap_dim=np.append(gap_dim,self._norb*self._nspin-1)
-            all_gaps=np.zeros(gap_dim,dtype=float)
-        #
-        if self._dim_arr==1:
-            # don't need to go over the last point because that will be
-            # computed in the impose_pbc call
-            for i in range(self._mesh_arr[0]-1):
-                # generate a kpoint
-                kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1)]
-                # solve at that point
-                (eval,evec)=self._model.solve_one(kpt,eig_vectors=True)
-                # store wavefunctions
-                self[i]=evec
-                # store gaps
-                if all_gaps is not None:
-                    all_gaps[i,:]=eval[1:]-eval[:-1]
-            # impose boundary conditions
-            self.impose_pbc(0,self._model._per[0])
-        elif self._dim_arr==2:
-            for i in range(self._mesh_arr[0]-1):
-                for j in range(self._mesh_arr[1]-1):
-                    kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1),\
-                         start_k[1]+float(j)/float(self._mesh_arr[1]-1)]
-                    (eval,evec)=self._model.solve_one(kpt,eig_vectors=True)
-                    self[i,j]=evec
-                    if all_gaps is not None:
-                        all_gaps[i,j,:]=eval[1:]-eval[:-1]
-            for dir in range(2):
-                self.impose_pbc(dir,self._model._per[dir])
-        elif self._dim_arr==3:
-            for i in range(self._mesh_arr[0]-1):
-                for j in range(self._mesh_arr[1]-1):
-                    for k in range(self._mesh_arr[2]-1):
-                        kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1),\
-                             start_k[1]+float(j)/float(self._mesh_arr[1]-1),\
-                             start_k[2]+float(k)/float(self._mesh_arr[2]-1)]
-                        (eval,evec)=self._model.solve_one(kpt,eig_vectors=True)
-                        self[i,j,k]=evec
-                        if all_gaps is not None:
-                            all_gaps[i,j,k,:]=eval[1:]-eval[:-1]
-            for dir in range(3):
-                self.impose_pbc(dir,self._model._per[dir])
-        elif self._dim_arr==4:
-            for i in range(self._mesh_arr[0]-1):
-                for j in range(self._mesh_arr[1]-1):
-                    for k in range(self._mesh_arr[2]-1):
-                        for l in range(self._mesh_arr[3]-1):
-                            kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1),\
-                                     start_k[1]+float(j)/float(self._mesh_arr[1]-1),\
-                                     start_k[2]+float(k)/float(self._mesh_arr[2]-1),\
-                                     start_k[3]+float(l)/float(self._mesh_arr[3]-1)]
-                            (eval,evec)=self._model.solve_one(kpt,eig_vectors=True)
-                            self[i,j,k,l]=evec
-                            if all_gaps is not None:
-                                all_gaps[i,j,k,l,:]=eval[1:]-eval[:-1]
-            for dir in range(4):
-                self.impose_pbc(dir,self._model._per[dir])
-        else:
-            raise Exception("\n\nWrong dimensionality!")
-
-        return all_gaps.min(axis=tuple(range(self._dim_arr)))
+            gap_dim=np.append(gap_dim,norb*nspin-1)
+            all_gaps = np.zeros(gap_dim,dtype="float64")
+        if nspin == 1:
+            if dim_arr == 1:
+                fwf.solve_on_grid_scalar1D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+            elif dim_arr == 2:
+                fwf.solve_on_grid_scalar2D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+            elif dim_arr == 3:
+                fwf.solve_on_grid_scalar3D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+            elif dim_arr == 4:
+                fwf.solve_on_grid_scalar4D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+        elif nspin == 2:
+            if dim_arr == 1:
+                fwf.solve_on_grid_spin1D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+            elif dim_arr == 2:
+                fwf.solve_on_grid_spin2D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+            elif dim_arr == 3:
+                fwf.solve_on_grid_spin3D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+            elif dim_arr == 4:
+                fwf.solve_on_grid_spin3D(dim_k,per,orb,norb,nsta,site_energies,\
+                hst,hind,hR,self._mesh_arr,self._wfs,all_gaps,start_k)
+        # self._wfs = wfs
+        for dir in range(dim_arr):
+            self.impose_pbc(dir,self._model._per[dir])
+        return all_gaps.min(axis=tuple(range(self._dim_arr))) 
 
     def __check_key(self,key):
         # do some checks for 1D
