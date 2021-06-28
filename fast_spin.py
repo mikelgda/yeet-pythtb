@@ -31,20 +31,19 @@ def gen_ham(dim_k,per,orb,norb,site_energies,hst,hind,hR,k_input):
         """Generate Hamiltonian for a certain k-point,
         K-point is given in reduced coordinates!"""
         kpnt = k_input
-        norb = orb.shape[0]
         ham=np.zeros((norb,2,norb,2),dtype=complex128)
         # modify diagonal elements
         for i in range(norb):
             ham[i,:,i,:]=site_energies[i]
         # go over all hoppings
-        for i in range(hst.shape[0]):
+        for h in range(hst.shape[0]):
             # get all data for the hopping parameter
-            amp=hst[i]
-            i = hind[i,0]
-            j = hind[i,1]
+            amp=hst[h]
+            i = hind[h,0]
+            j = hind[h,1]
             # in 0-dim case there is no phase factor
             if dim_k>0:
-                ind_R = hR[i]
+                ind_R = hR[h]
                 # vector from one site to another
                 rv = -orb[i,:] + orb[j,:] + ind_R
                 # Take only components of vector which are periodic
