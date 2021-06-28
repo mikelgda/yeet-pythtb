@@ -1124,7 +1124,7 @@ matrix.""")
         fin_orb=np.array(fin_orb)
 
         # generate periodic directions of a finite model
-        fin_per=copy.deepcopy(self._per)
+        fin_per=copy.deepcopy(self._per).tolist()
         # find if list of periodic directions contains the one you
         # want to make finite
         if fin_per.count(fin_dir)!=1:
