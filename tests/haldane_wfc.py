@@ -131,6 +131,7 @@ for ax in [ax1,ax2]:
   ax.set_xticklabels(k_label)
 
 fig.tight_layout()
-fig.savefig("haldane_hwf.pdf")
+# fig.savefig("haldane_hwf.pdf")
+plt.show()
 
 print('Done.\n')

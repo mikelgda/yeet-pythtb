@@ -78,7 +78,8 @@ ax.set_ylim(-7.,7.)
 ax.yaxis.set_ticks([-2.*np.pi,-np.pi,0.,np.pi,2.*np.pi])
 ax.set_yticklabels((r'$-2\pi$',r'$-\pi$',r'$0$',r'$\pi$', r'$2\pi$'))
 fig.tight_layout()
-fig.savefig("haldane_bp_phase.pdf")
+# fig.savefig("haldane_bp_phase.pdf")
+plt.show()
 # print out info about flux
 print(" Berry flux= ",flux_a_1)
 

@@ -6,6 +6,7 @@
 from __future__ import print_function
 from yeet_pythtb import * # import TB model class
 import numpy as np
+import matplotlib.pyplot as plt
 
 # define lattice vectors
 lat=[[1.0,0.0],[0.5,np.sqrt(3.0)/2.0]]
@@ -33,7 +34,8 @@ ax.set_title("Graphene, bulk")
 ax.set_xlabel("x coordinate")
 ax.set_ylabel("y coordinate")
 fig.tight_layout()
-fig.savefig("visualize_bulk.pdf")
+# fig.savefig("visualize_bulk.pdf")
+plt.show()
 
 # cutout finite model along direction 0
 cut_one=my_model.cut_piece(8,0,glue_edgs=False)
@@ -43,7 +45,8 @@ ax.set_title("Graphene, ribbon")
 ax.set_xlabel("x coordinate")
 ax.set_ylabel("y coordinate")
 fig.tight_layout()
-fig.savefig("visualize_ribbon.pdf")
+# fig.savefig("visualize_ribbon.pdf")
+plt.show()
 
 # cutout finite model along direction 1 as well
 cut_two=cut_one.cut_piece(8,1,glue_edgs=False)
@@ -53,6 +56,7 @@ ax.set_title("Graphene, finite")
 ax.set_xlabel("x coordinate")
 ax.set_ylabel("y coordinate")
 fig.tight_layout()
-fig.savefig("visualize_finite.pdf")
+# fig.savefig("visualize_finite.pdf")
+plt.show()
 
 print('Done.\n')

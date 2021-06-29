@@ -41,7 +41,8 @@ ax.set_title("Graphene, arbitrary surface")
 ax.set_xlabel("x coordinate")
 ax.set_ylabel("y coordinate")
 fig.tight_layout()
-fig.savefig("supercell_vis.pdf")
+# fig.savefig("supercell_vis.pdf")
+plt.show()
 
 # compute the band structure in the entire band
 (k_vec,k_dist,k_node)=slab_model.k_path('full',100)
@@ -66,6 +67,7 @@ ax.xaxis.set_ticks(k_node)
 ax.set_xticklabels((r'$0$',r'$\pi$',r'$2\pi$'))
 # make an PDF figure of a plot
 fig.tight_layout()
-fig.savefig("supercell_band.pdf")
+# fig.savefig("supercell_band.pdf")
+plt.show()
 
 print('Done.\n')

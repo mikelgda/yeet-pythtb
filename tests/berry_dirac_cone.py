@@ -101,6 +101,7 @@ ax.set_title("Berry curvature near Dirac cone")
 ax.set_xlabel(r"$k_x$")
 ax.set_ylabel(r"$k_y$")
 fig.tight_layout()
-fig.savefig("cone_phases.pdf")
+# fig.savefig("cone_phases.pdf")
+plt.show()
 
 print('Done.\n')

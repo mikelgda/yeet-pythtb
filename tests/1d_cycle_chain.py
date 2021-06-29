@@ -116,6 +116,7 @@ ax.set_xlabel(r"Parameter $\lambda$")
 ax.set_ylabel("Energy")
 ax.set_xlim(0.,1.)
 fig.tight_layout()
-fig.savefig("3site_endstates.pdf")
+# fig.savefig("3site_endstates.pdf")
+plt.show()
 
 print('Done.\n')

@@ -80,6 +80,7 @@ ax.plot(k_dist,evals[1])
 
 # make an PDF figure of a plot
 fig.tight_layout()
-fig.savefig("graphene.pdf")
+# fig.savefig("graphene.pdf")
+plt.show()
 
 print('Done.\n')

@@ -86,6 +86,7 @@ ax.plot(k_dist,evals[1])
 
 # save as PDF
 fig.tight_layout()
-fig.savefig("buckled_layer.pdf")
+# fig.savefig("buckled_layer.pdf")
+plt.show()
 
 print('Done.\n')

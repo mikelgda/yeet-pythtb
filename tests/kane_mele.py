@@ -132,6 +132,7 @@ for top_index in ["even","odd"]:
   ax2.set_title("1D Wannier centers: "+top_index+" phase")
 
   fig.tight_layout()
-  fig.savefig("kane_mele_"+top_index+".pdf")
+  # fig.savefig("kane_mele_"+top_index+".pdf")
+  plt.show()
 
 print('Done.\n')

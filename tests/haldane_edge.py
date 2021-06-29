@@ -7,6 +7,7 @@
 from __future__ import print_function
 from yeet_pythtb import * # import TB model class
 import numpy as np
+import matplotlib.pyplot as plt
 
 # define lattice vectors
 lat=[[1.0,0.0],[0.5,np.sqrt(3.0)/2.0]]
@@ -63,13 +64,15 @@ ax.set_title("Edge state for finite model without periodic direction")
 ax.set_xlabel("x coordinate")
 ax.set_ylabel("y coordinate")
 fig.tight_layout()
-fig.savefig("edge_state.pdf")
+# fig.savefig("edge_state.pdf")
+plt.show()
 #
 (fig,ax)=fin_model_half.visualize(0,1,eig_dr=evecs_half[ed,:],draw_hoppings=False)
 ax.set_title("Edge state for finite model periodic in one direction")
 ax.set_xlabel("x coordinate")
 ax.set_ylabel("y coordinate")
 fig.tight_layout()
-fig.savefig("edge_state_half.pdf")
+# fig.savefig("edge_state_half.pdf")
+plt.show()
 
 print('Done.\n')

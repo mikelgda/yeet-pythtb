@@ -116,6 +116,7 @@ ax.set_xlabel("Band energy")
 ax.set_ylabel("Number of states")
 # make an PDF figure of a plot
 fig.tight_layout()
-fig.savefig("haldane_dos.pdf")
+# fig.savefig("haldane_dos.pdf")
+plt.show()
 
 print('Done.\n')

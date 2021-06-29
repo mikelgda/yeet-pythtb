@@ -2237,7 +2237,7 @@ class wf_array(object):
             raise Exception("\n\nWrong dimensionality!")
         self._model._update_arrays()
         dim_k = self._model._dim_k
-        per = self._model._per
+        per = np.array(self._model._per)
         orb = self._model._orb
         norb = self._model._norb
         nsta = self._model._nsta
