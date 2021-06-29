@@ -1,4 +1,4 @@
 .vscode/settings.json
 .ipynb_checkpoints/test-checkpoint.ipynb
 .DS_Store
-./__pycache__/*.pyc
+.__pycache__/*.pyc
