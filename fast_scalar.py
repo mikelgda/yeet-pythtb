@@ -37,14 +37,14 @@ def gen_ham(dim_k,per,orb,norb,site_energies,hst,hind,hR,k_input):
         for i in range(norb):
             ham[i,i]=site_energies[i]
         # go over all hoppings
-        for i in range(hst.shape[0]):
+        for h in range(hst.shape[0]):
             # get all data for the hopping parameter
-            amp=hst[i]
-            i = hind[i,0]
-            j = hind[i,1]
+            amp=hst[h]
+            i = hind[h,0]
+            j = hind[h,1]
             # in 0-dim case there is no phase factor
             if dim_k>0:
-                ind_R = hR[i]
+                ind_R = hR[h]
                 # vector from one site to another
                 rv = -orb[i,:] + orb[j,:] + ind_R
                 # Take only components of vector which are periodic
@@ -63,18 +63,18 @@ def gen_ham(dim_k,per,orb,norb,site_energies,hst,hind,hR,k_input):
 def sol_ham(ham,eig_vectors=False):
         """Solves Hamiltonian and returns eigenvectors, eigenvalues"""
         # reshape matrix first
-        ham_use = ham
+        ham
         # check that matrix is hermitian
-        if np.real(np.max(ham_use-ham_use.T.conj()))>1.0E-9:
+        if np.real(np.max(ham-ham.T.conj()))>1.0E-9:
             raise Exception("\n\nHamiltonian matrix is not hermitian?!")
         #solve matrix
         if eig_vectors==False: # only find eigenvalues
-            eval=np.linalg.eigvalsh(ham_use)
+            eval=np.linalg.eigvalsh(ham)
             # sort eigenvalues and convert to real numbers
             eval=_nicefy_eval(eval)
             return (eval,np.zeros((1,1),dtype="complex128"))
         else: # find eigenvalues and eigenvectors
-            (eval,eig)=np.linalg.eigh(ham_use)
+            (eval,eig)=np.linalg.eigh(ham)
             # transpose matrix eig since otherwise it is confusing
             # now eig[i,:] is eigenvector for eval[i]-th eigenvalue
             eig=eig.T

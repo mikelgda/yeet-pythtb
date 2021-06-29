@@ -154,12 +154,12 @@ class tb_model(object):
         # to be considered periodic.        
         if per==None:
             # by default first _dim_k dimensions are periodic
-            self._per=np.array(list(range(self._dim_k)))
+            self._per=list(range(self._dim_k))
         else:
             if len(per)!=self._dim_k:
                 raise Exception("\n\nWrong choice of periodic/infinite direction!")
             # store which directions are the periodic ones
-            self._per=np.array(per)
+            self._per=per
 
         # remember number of spin components
         if nspin not in [1,2]:
@@ -893,18 +893,20 @@ matrix.""")
     def _gen_ham(self,k_input):
         """Generate Hamiltonian for a certain k-point,
         K-point is given in reduced coordinates!"""
+        if self._update:
+            self._update_arrays()
+        per = np.array(self._per)
         if self._nspin == 1:
-            return fsc.gen_ham(self._dim_k,self._per,self._orb,self._norb, \
+            return fsc.gen_ham(self._dim_k,per,self._orb,self._norb, \
                 self._site_energies,self._hst,self._hind,self._hR,np.array(k_input,dtype="float64"))
         elif self._nspin == 2:
-            return fsp.gen_ham(self._dim_k,self._per,self._orb,self._norb, \
+            return fsp.gen_ham(self._dim_k,per,self._orb,self._norb, \
                 self._site_energies,self._hst,self._hind,self._hR,np.array(k_input,dtype="float64"))
 
     def _sol_ham(self,ham,eig_vectors=False):
         """Solves Hamiltonian and returns eigenvectors, eigenvalues"""
+
         # check that matrix is hermitian
-        if np.max(ham-ham.T.conj())>1.0E-9:
-            raise Exception("\n\nHamiltonian matrix is not hermitian?!")
         if self._nspin == 1:
             evals,eigs = fsc.sol_ham(ham,eig_vectors=eig_vectors)
         elif self._nspin == 2:
@@ -912,7 +914,7 @@ matrix.""")
         if eig_vectors:
             return evals,eigs
         else:
-            return eigs
+            return evals
 
     def solve_all(self,k_list=None,eig_vectors=False):
         r"""
@@ -999,14 +1001,15 @@ matrix.""")
             self._update = False
         # if not 0-dim case
         if not (k_list is None):
+            per = np.array(self._per)
             k_list = np.array(k_list,dtype="float64",order='C')
             if k_list.ndim == 1:
                 k_list = k_list.reshape(k_list.size,1)
             if self._nspin == 1:
-                ret_eval,ret_evec = fsc.solve_all(self._dim_k,self._per,self._orb,self._norb,self._nsta, \
+                ret_eval,ret_evec = fsc.solve_all(self._dim_k,per,self._orb,self._norb,self._nsta, \
                     self._site_energies,self._hst,self._hind,self._hR,k_list,eig_vectors=eig_vectors)
             elif self._nspin == 2:
-                ret_eval,ret_evec = fsp.solve_all(self._dim_k,self._per,self._orb,self._norb,self._nsta, \
+                ret_eval,ret_evec = fsp.solve_all(self._dim_k,per,self._orb,self._norb,self._nsta, \
                     self._site_energies,self._hst,self._hind,self._hR,k_list,eig_vectors=eig_vectors)
             # return stuff
             if eig_vectors==False:
@@ -1124,7 +1127,7 @@ matrix.""")
         fin_orb=np.array(fin_orb)
 
         # generate periodic directions of a finite model
-        fin_per=copy.deepcopy(self._per).tolist()
+        fin_per=copy.deepcopy(self._per)
         # find if list of periodic directions contains the one you
         # want to make finite
         if fin_per.count(fin_dir)!=1:
