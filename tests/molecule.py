@@ -59,6 +59,7 @@ ax.set_xlabel("Orbital")
 ax.set_ylabel("Energy")
 # make an PDF figure of a plot
 fig.tight_layout()
-fig.savefig("0dim_spectrum.pdf")
+# fig.savefig("0dim_spectrum.pdf")
+plt.show()
 
 print('Done.\n')

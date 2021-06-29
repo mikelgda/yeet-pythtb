@@ -31,3 +31,4 @@ ax.set_xlim(k_node[0],k_node[-1])
 for n in range(len(k_node)):
   ax.axvline(x=k_node[n], linewidth=0.5, color='k')
 fig.tight_layout()
+plt.show()

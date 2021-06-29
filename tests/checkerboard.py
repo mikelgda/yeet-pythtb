@@ -68,6 +68,6 @@ ax.set_xlabel("Path in k-space")
 ax.set_ylabel("Band energy")
 # make an PDF figure of a plot
 fig.tight_layout()
-fig.savefig("checkerboard_band.pdf")
-
+# fig.savefig("checkerboard_band.pdf")
+plt.show()
 print('Done.\n')

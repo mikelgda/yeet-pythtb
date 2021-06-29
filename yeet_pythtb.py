@@ -890,18 +890,60 @@ matrix.""")
         "Returns lattice vectors in format [vector,coordinate]."
         return self._lat.copy()
 
-    def _gen_ham(self,k_input):
+    def _gen_ham(self,k_input=None):
         """Generate Hamiltonian for a certain k-point,
         K-point is given in reduced coordinates!"""
-        if self._update:
-            self._update_arrays()
-        per = np.array(self._per)
-        if self._nspin == 1:
-            return fsc.gen_ham(self._dim_k,per,self._orb,self._norb, \
-                self._site_energies,self._hst,self._hind,self._hR,np.array(k_input,dtype="float64"))
-        elif self._nspin == 2:
-            return fsp.gen_ham(self._dim_k,per,self._orb,self._norb, \
-                self._site_energies,self._hst,self._hind,self._hR,np.array(k_input,dtype="float64"))
+        kpnt=np.array(k_input)
+        if not (k_input is None):
+            # if kpnt is just a number then convert it to an array
+            if len(kpnt.shape)==0:
+                kpnt=np.array([kpnt])
+            # check that k-vector is of corect size
+            if kpnt.shape!=(self._dim_k,):
+                raise Exception("\n\nk-vector of wrong shape!")
+        else:
+            if self._dim_k!=0:
+                raise Exception("\n\nHave to provide a k-vector!")
+        #accelerate D>0 cases
+        if self._dim_k != 0:
+            if self._update:
+                self._update_arrays()
+            per = np.array(self._per)
+            if self._nspin == 1:
+                return fsc.gen_ham(self._dim_k,per,self._orb,self._norb, \
+                    self._site_energies,self._hst,self._hind,self._hR,np.array(k_input,dtype="float64"))
+            elif self._nspin == 2:
+                return fsp.gen_ham(self._dim_k,per,self._orb,self._norb, \
+                    self._site_energies,self._hst,self._hind,self._hR,np.array(k_input,dtype="float64"))
+        #0D case is handled as always
+        else:
+            if self._nspin==1:
+                ham=np.zeros((self._norb,self._norb),dtype=complex)
+            elif self._nspin==2:
+                ham=np.zeros((self._norb,2,self._norb,2),dtype=complex)
+            # modify diagonal elements
+            for i in range(self._norb):
+                if self._nspin==1:
+                    ham[i,i]=self._site_energies[i]
+                elif self._nspin==2:
+                    ham[i,:,i,:]=self._site_energies[i]
+            # go over all hoppings
+            for hopping in self._hoppings:
+            # get all data for the hopping parameter
+                if self._nspin==1:
+                    amp=complex(hopping[0])
+                elif self._nspin==2:
+                    amp=np.array(hopping[0],dtype=complex)
+                i=hopping[1]
+                j=hopping[2]
+                # add this hopping into a matrix and also its conjugate
+                if self._nspin==1:
+                    ham[i,j]+=amp
+                    ham[j,i]+=amp.conjugate()
+                elif self._nspin==2:
+                    ham[i,:,j,:]+=amp
+                    ham[j,:,i,:]+=amp.T.conjugate()
+            return ham
 
     def _sol_ham(self,ham,eig_vectors=False):
         """Solves Hamiltonian and returns eigenvectors, eigenvalues"""
@@ -1056,7 +1098,8 @@ matrix.""")
     def _update_arrays(self):
         self._hst = np.array([h[0] for h in self._hoppings]).astype("complex128")
         self._hind = np.array([h[1:3] for h in self._hoppings])
-        self._hR = np.array([h[3] for h in self._hoppings])
+        if self._dim_k > 0:
+            self._hR = np.array([h[3] for h in self._hoppings])
 
     def cut_piece(self,num,fin_dir,glue_edgs=False):
         r"""
