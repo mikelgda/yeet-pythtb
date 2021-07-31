@@ -13,11 +13,11 @@ setuptools.setup(
     packages=setuptools.find_packages(),    # List of all python modules to be installed
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: GNU GPL2.0 License",
         "Operating System :: OS Independent",
     ],                                      # Information to filter the project on PyPi website
     python_requires='>=3.6',                # Minimum version requirement of the package
-    py_modules=["quicksample"],             # Name of the python package
-    package_dir={'':'quicksample/src'},     # Directory of the source code of the package
-    install_requires=[]                     # Install other dependencies if any
+    py_modules=["yeet-pythtb"],             # Name of the python package
+    package_dir={'':'yeet-pythtb/src'},     # Directory of the source code of the package
+    install_requires=["numba","matplotlib","numpy"]                     # Install other dependencies if any
 )

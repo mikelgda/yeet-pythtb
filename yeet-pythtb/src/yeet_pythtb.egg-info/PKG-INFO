@@ -1,0 +1,24 @@
+Metadata-Version: 2.1
+Name: yeet-pythtb
+Version: 1.0.0
+Summary: A JIT-compiled version of PythTB for solving tight-binding models
+Home-page: UNKNOWN
+Author: Mikel García Díez
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: GNU GPL2.0 License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# yeet-pythtb
+
+This package is a modification of the original [PythTB](https://www.physics.rutgers.edu/pythtb/), developed and mantained by by Sinisa Coh (University of California at Riverside), David Vanderbilt (Rutgers University) and [others](https://www.physics.rutgers.edu/pythtb/about.html#history). All credit of the essential implementation goes to the original developers. For documentation, please visit the [PythTB page](https://www.physics.rutgers.edu/pythtb/usage.html), as the interface is identical.
+
+This modification implements the most performance-critical routines in a JIT-compiled way by using [Numba](http://numba.pydata.org/). In particular, the functions that solve the Hamiltonian are compiled and parallelized. This affects essential computations such as the calculation of bandstructures and Wannier charge centers, etc. The speed gains are more noticeable in large tight-binding models, such as those obtained through the Wannier90 interface. For really simple models, the JIT-compilation overhead may not be worth it, although is a one-time delay for each routine.
+
+The package succesfully runs all the [examples](https://www.physics.rutgers.edu/pythtb/examples.html) for the original PythTB, so it is expected to work without issues.
+
+
