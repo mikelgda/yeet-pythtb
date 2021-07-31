@@ -184,9 +184,9 @@ class tb_model(object):
         
         # Initialize hoppings to empty list
         self._hoppings=[]
-        self._hst = None
-        self._hind = None
-        self._hR = None
+        self._hst = np.array([self._val_to_block(0.)])
+        self._hind = np.array([[0,0]])
+        self._hR = np.array([[0]*dim_r])
         self._update = False
 
         # The onsite energies and hoppings are not specified

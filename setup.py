@@ -19,5 +19,5 @@ setuptools.setup(
     python_requires='>=3.6',                # Minimum version requirement of the package
     py_modules=["yeet_pythtb"],             # Name of the python package
     package_dir={'':'yeet-pythtb/src'},     # Directory of the source code of the package
-    install_requires=["numba","matplotlib","numpy"]                     # Install other dependencies if any
+    install_requires=["numba","matplotlib","numpy","scipy"]                     # Install other dependencies if any
 )
