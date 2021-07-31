@@ -7,3 +7,6 @@ tests/fast_wfarray.py
 tests/fast_spin.py
 tests/fast_scalar.py
 tests/__pycache__/*.pyc
+build
+dist
+yeet-pythtb\src\yeet_pythtb.egg-info
