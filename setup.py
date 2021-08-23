@@ -17,7 +17,8 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],                                      # Information to filter the project on PyPi website
     python_requires='>=3.6',                # Minimum version requirement of the package
-    py_modules=["yeet_pythtb"],             # Name of the python package
-    package_dir={'':'yeet-pythtb/src'},     # Directory of the source code of the package
+    py_modules=["yeet_pythtb","fast_scalar",
+    "fast_spin","fast_wfarray"],             # Name of the python package
+    package_dir={'':'yeet-pythtb'},     # Directory of the source code of the package
     install_requires=["numba","matplotlib","numpy","scipy"]                     # Install other dependencies if any
 )

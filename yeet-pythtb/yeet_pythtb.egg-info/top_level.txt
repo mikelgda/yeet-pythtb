@@ -1,0 +1,5 @@
+fast_scalar
+fast_spin
+fast_wfarray
+yeet-pythtb
+yeet_pythtb
