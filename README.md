@@ -6,6 +6,14 @@ This modification implements the most performance-critical routines in a JIT-com
 
 The package succesfully runs all the [examples](https://www.physics.rutgers.edu/pythtb/examples.html) for the original PythTB, so it is expected to work without issues.
 
+## Installation
+
+Install using pip
+
+```
+pip install yeet-pythtb
+```
+
 ## Requirements
 
 yeet-pythtb requires the following packages:
