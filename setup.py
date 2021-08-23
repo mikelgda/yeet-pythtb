@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="yeet-pythtb",                     # This is the name of the package
-    version="1.0.0",                        # The initial release version
+    version="1.0.1",                        # The initial release version
     author="Mikel García Díez",                     # Full name of the author
     description="A JIT-compiled version of PythTB for solving tight-binding models",
     long_description=long_description,      # Long description read from the the readme file
