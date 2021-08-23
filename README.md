@@ -11,7 +11,7 @@ The package succesfully runs all the [examples](https://www.physics.rutgers.edu/
 For the moment, yeet-pythtb can be installed from source or from test.pypi using the command
 
 ```
-pip install -i https://test.pypi.org/simple/ yeet-pythtb==1.0.0
+pip install -i https://test.pypi.org/simple/ yeet-pythtb
 ```
 
 ## Requirements
